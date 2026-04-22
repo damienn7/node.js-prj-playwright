@@ -2,6 +2,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import { runPageAnalysis } from '../lib/playwright'
 import * as repo from '../repositories/analysisRepository'
+import { uploadScreenshot } from './storage/s3StorageService'
 
 const OUTPUTS_DIR = path.join(process.cwd(), 'outputs')
 
@@ -31,7 +32,7 @@ export const runAnalysis = async (analysisId: string, targetUrl: string) => {
   try {
     const res = await runPageAnalysis(targetUrl)
 
-    // save screenshot
+    // save screenshot locally
     const screenshotPath = path.join(outputFolder, `screenshot-0.png`)
     await fs.writeFile(screenshotPath, res.screenshotBuffer)
 
@@ -57,13 +58,39 @@ export const runAnalysis = async (analysisId: string, targetUrl: string) => {
       transitions: []
     }
 
-    const screenshotsJson = [
-      {
-        stepIndex: 0,
-        label: 'home',
-        filePath: path.relative(process.cwd(), screenshotPath)
-      }
-    ]
+    // attempt to upload screenshot to S3 (non-fatal)
+    type ScreenshotJsonEntry = {
+      stepIndex: number
+      label: string
+      filePath: string
+      storage?: string
+      s3Key?: string
+      url?: string
+    }
+
+    const defaultEntry: ScreenshotJsonEntry = {
+      stepIndex: 0,
+      label: 'home',
+      filePath: path.relative(process.cwd(), screenshotPath)
+    }
+
+    let screenshotsJson: ScreenshotJsonEntry[] = [defaultEntry]
+
+    try {
+      const s3res = await uploadScreenshot(screenshotPath, analysisId, 0, 'home')
+      screenshotsJson = [
+        {
+          ...defaultEntry,
+          storage: s3res.storage,
+          s3Key: s3res.s3Key,
+          url: s3res.url
+        } as ScreenshotJsonEntry
+      ]
+    } catch (e: any) {
+      console.error('S3 upload failed for', screenshotPath, e?.message || e)
+      // keep local filePath only; analysis continues
+      screenshotsJson = [defaultEntry]
+    }
 
     const userStoriesMd = (() => {
       const stories: string[] = []
