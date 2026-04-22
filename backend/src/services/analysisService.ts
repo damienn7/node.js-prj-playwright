@@ -48,6 +48,28 @@ export const getAnalysis = async (id: string) => {
   return repo.findById(id)
 }
 
+export type AnalysisScreenshot = {
+  stepIndex: number
+  label?: string
+  filePath?: string
+  storage?: string
+  s3Key?: string
+  url?: string
+}
+
+export const getAnalysisScreenshots = async (id: string): Promise<AnalysisScreenshot[] | null> => {
+  const row = await repo.findScreenshotsById(id)
+  if (!row) return null
+  return (row.screenshotsJson || []) as AnalysisScreenshot[]
+}
+
+export const getAnalysisScreenshotByStepIndex = async (id: string, stepIndex: number): Promise<AnalysisScreenshot | null> => {
+  const screenshots = await getAnalysisScreenshots(id)
+  if (!screenshots) return null
+  const found = screenshots.find(s => Number(s.stepIndex) === Number(stepIndex))
+  return found || null
+}
+
 export const deleteAnalysis = async (id: string) => {
   return repo.deleteById(id)
 }

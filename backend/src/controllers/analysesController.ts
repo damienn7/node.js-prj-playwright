@@ -21,6 +21,25 @@ export const getAnalysis = async (req: Request, res: Response) => {
   res.json({ data: found })
 }
 
+export const getAnalysisScreenshots = async (req: Request, res: Response) => {
+  const { id } = req.params
+  const screenshots = await service.getAnalysisScreenshots(id)
+  if (screenshots === null) return res.status(404).json({ error: 'Analysis not found' })
+  res.json({ data: screenshots })
+}
+
+export const getAnalysisScreenshotByStepIndex = async (req: Request, res: Response) => {
+  const { id } = req.params
+  const stepIndexRaw = req.params.stepIndex
+  const stepIndex = Number(stepIndexRaw)
+  if (!Number.isInteger(stepIndex) || stepIndex < 0) return res.status(400).json({ error: 'Invalid stepIndex' })
+
+  const screenshot = await service.getAnalysisScreenshotByStepIndex(id, stepIndex)
+  if (screenshot === null) return res.status(404).json({ error: 'Analysis not found' })
+  if (!screenshot) return res.status(404).json({ error: 'Screenshot not found' })
+  res.json({ data: screenshot })
+}
+
 export const deleteAnalysis = async (req: Request, res: Response) => {
   const { id } = req.params
   await service.deleteAnalysis(id)

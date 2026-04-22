@@ -41,6 +41,8 @@ API Endpoints
 - GET /api/analyses/:id — get analysis details
 - DELETE /api/analyses/:id — delete analysis
 - PATCH /api/analyses/:id/status — update status { status }
+ - GET /api/analyses/:id/screenshots — list screenshots for an analysis
+ - GET /api/analyses/:id/screenshots/:stepIndex — get a screenshot by stepIndex
 
 Notes
 - Validation: `zod` used for request payload validation (simple, robust).
@@ -75,3 +77,19 @@ For V0.2
 - Add Playwright integration worker service that updates analyses statuses and stores screenshots.
 - Add authentication/authorization.
 - Add background queue for analysis processing.
+
+Examples
+
+List screenshots for an analysis:
+
+```bash
+curl -sS -X GET "http://localhost:4000/api/analyses/<analysisId>/screenshots" \
+	-H "Accept: application/json"
+```
+
+Get a single screenshot by step index:
+
+```bash
+curl -sS -X GET "http://localhost:4000/api/analyses/<analysisId>/screenshots/0" \
+	-H "Accept: application/json"
+```

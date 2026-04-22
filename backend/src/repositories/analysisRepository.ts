@@ -32,6 +32,10 @@ export const findById = async (id: string) => {
   return prisma.analysis.findUnique({ where: { id } })
 }
 
+export const findScreenshotsById = async (id: string) => {
+  return prisma.analysis.findUnique({ where: { id }, select: { id: true, screenshotsJson: true } })
+}
+
 export const deleteById = async (id: string) => {
   return prisma.analysis.delete({ where: { id } })
 }

@@ -10,6 +10,9 @@ const statusSchema = z.object({ status: z.union([z.literal('queued'), z.literal(
 
 analysesRouter.post('/', validate(createSchema), controller.createAnalysis)
 analysesRouter.get('/', controller.listAnalyses)
+// screenshots endpoints (declare before /:id to avoid param collision)
+analysesRouter.get('/:id/screenshots', controller.getAnalysisScreenshots)
+analysesRouter.get('/:id/screenshots/:stepIndex', controller.getAnalysisScreenshotByStepIndex)
 analysesRouter.get('/:id', controller.getAnalysis)
 analysesRouter.delete('/:id', controller.deleteAnalysis)
 analysesRouter.patch('/:id/status', validate(statusSchema), controller.updateStatus)

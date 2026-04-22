@@ -22,3 +22,14 @@
 - Preserve local file path when useful for debugging
 - If S3 upload fails, avoid crashing the whole analysis when possible
 - Keep controllers thin and put S3 logic in a dedicated service
+
+## API conventions
+
+- Keep controllers thin
+- Put retrieval logic in services
+- Reuse existing response format
+- Avoid any when reading JSON fields from Prisma
+- For screenshots endpoints, read from Analysis.screenshotsJson
+- Return [] when screenshotsJson is null
+- Return 404 when analysis or screenshot is not found
+- Update README with curl examples for every new endpoint
