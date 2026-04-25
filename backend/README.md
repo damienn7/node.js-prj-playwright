@@ -78,6 +78,41 @@ For V0.2
 - Add authentication/authorization.
 - Add background queue for analysis processing.
 
+Internal worker API
+-------------------
+This backend exposes a small set of internal endpoints intended for a trusted external worker (Playwright runner). Protect these with the shared token in `WORKER_SHARED_TOKEN` and send it as `Authorization: Bearer <token>`.
+
+- `POST /api/internal/analyses/claim` — claim the next queued analysis and mark it `running`. Returns `{ data: null }` when none available.
+
+Example:
+```bash
+curl -X POST "http://localhost:4000/api/internal/analyses/claim" -H "Authorization: Bearer $WORKER_SHARED_TOKEN"
+```
+
+- `POST /api/internal/analyses/:id/complete` — worker reports completion and sends result payload (JSON body). Backend will set `status=completed`, `completedAt`, compute `durationMs` and save provided fields.
+
+Example:
+```bash
+curl -X POST "http://localhost:4000/api/internal/analyses/<id>/complete" \
+	-H "Authorization: Bearer $WORKER_SHARED_TOKEN" \
+	-H "Content-Type: application/json" \
+	-d '{ "summaryJson": {}, "screenshotsJson": [] }'
+```
+
+- `POST /api/internal/analyses/:id/fail` — worker reports failure. Body: `{ "errorMessage": "..." }`. Backend sets `status=failed` and records `errorMessage`.
+
+Example:
+```bash
+curl -X POST "http://localhost:4000/api/internal/analyses/<id>/fail" \
+	-H "Authorization: Bearer $WORKER_SHARED_TOKEN" \
+	-H "Content-Type: application/json" \
+	-d '{ "errorMessage": "playwright failed" }'
+```
+
+Configuration
+- Set `WORKER_SHARED_TOKEN` in environment and ensure workers use it in the `Authorization` header.
+- Control whether the API runs Playwright itself with `PLAYWRIGHT_ENABLED` (set to `false` in production when using external workers).
+
 Examples
 
 List screenshots for an analysis:

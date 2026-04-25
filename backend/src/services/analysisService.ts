@@ -29,10 +29,14 @@ export const createAnalysis = async (url: string) => {
 
   const created = await repo.create(payload as any)
 
-  // fire-and-forget analysis run
-  setImmediate(() => {
-    void pwService.runAnalysis(String(created.id), created.normalizedUrl)
-  })
+  // optionally run Playwright locally (controlled by env)
+  const enabled = String(process.env.PLAYWRIGHT_ENABLED || 'false') === 'true'
+  if (enabled) {
+    // fire-and-forget analysis run (for local/dev only)
+    setImmediate(() => {
+      void pwService.runAnalysis(String(created.id), created.normalizedUrl)
+    })
+  }
 
   return created
 }
