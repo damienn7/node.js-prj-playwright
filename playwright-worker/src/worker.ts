@@ -2,6 +2,8 @@ import fs from 'fs/promises'
 import path from 'path'
 import { chromium } from 'playwright'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:4000'
 const TOKEN = process.env.WORKER_SHARED_TOKEN || ''
